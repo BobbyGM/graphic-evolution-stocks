@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
+import {Line} from 'react-chartjs-2';
 import StocksList from './StocksList';
 import RangesList from './RangesList';
-import {Line} from 'react-chartjs-2';
-
-var data = {};
-var labels = [];
-var indicatorsHigh = [];
-var indicatorsLow = [];
 
 function Chart() {
 	const [symbol, setSymbol] = useState('');
 	const [range, setRange] = useState('');
+	const [labelsChart, setLabelsChart] = useState([]);
+	const [indicatorsHighChart, setIndicatorsHighChart] = useState([]);
+	const [indicatorsLowChart, setIndicatorsLowChart] = useState([]);
 	const [chartData, setChartData] = useState({
 		labels: [],
 		datasets: [
@@ -37,20 +35,20 @@ function Chart() {
 		setRange(value);
 	}
 
-	function handleChartData(labels, indicatorsHigh, indicatorsLow) {
+	function handleChartData(labelsChart, indicatorsHighChart, indicatorsLowChart) {
 		setChartData({
-			labels: labels,
+			labels: labelsChart,
 			datasets: [
 			{
 				label: 'Indicators High',
 				borderColor: 'black',
-				data: indicatorsHigh,
+				data: indicatorsHighChart,
 				fill: false
 			},
 			{
 				label: 'Indicators Low',
 				borderColor: 'red',
-				data: indicatorsLow,
+				data: indicatorsLowChart,
 				fill: false
 			}
 			]
@@ -63,21 +61,24 @@ function Chart() {
 		xhr.send();
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === 4 && xhr.status === 200) {
-				data = JSON.parse(xhr.responseText);
-				labels = data.chart.result[0].timestamp;
+				let data = JSON.parse(xhr.responseText);
+				let labels = data.chart.result[0].timestamp;
 				labels.forEach(function(element,index) {
 					let humanReadableDate = new Date(element * 1000);
 					labels[index] = humanReadableDate.toLocaleDateString();
 				})
-				indicatorsHigh = data.chart.result[0].indicators.quote[0].high;
-				indicatorsLow = data.chart.result[0].indicators.quote[0].low;
+				setLabelsChart(labels);
+				let indicatorsHigh = data.chart.result[0].indicators.quote[0].high;
+				setIndicatorsHighChart(indicatorsHigh);
+				let indicatorsLow = data.chart.result[0].indicators.quote[0].low;
+				setIndicatorsLowChart(indicatorsLow);
 			}
 		}
 	}
 
 	function viewChart() {
 		getChartData(symbol, range);
-		handleChartData(labels, indicatorsHigh, indicatorsLow);
+		handleChartData(labelsChart, indicatorsHighChart, indicatorsLowChart);
 	}
 
 	return (
